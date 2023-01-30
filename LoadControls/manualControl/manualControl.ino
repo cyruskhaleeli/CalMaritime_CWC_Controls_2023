@@ -7,13 +7,11 @@ Adafruit_ADS1115 adc;  // Construct an ads1115
 Adafruit_MCP4725 dac;
 
 
-int voltageBit1;
-int currentBit1;
-int voltageBit2;
-int currentBit2;
+float voltageA;
+float voltageB;
 
-float realVoltage;
-float realCurrent;
+float currentA;
+float currentB;
 
 float voltageScaling = 15.78; 
 float currentVOffset = 0.0917;
@@ -21,26 +19,34 @@ float currentVscaling = 0.9362;
 
 void readParameters() {
 
+//Read Values off of the Teensy 
+int voltageBitTeensy = analogRead(A0);
+int currentBitTeensy = analogRead(A1);
+//Convert 10Bit to V & I 
+voltageA = ((voltageBitTeensy/1023.00)*3.30*voltageScaling); 
+currentA = ((((currentBitTeensy/1023.00)*3.30)-currentVOffset)/currentVscaling); 
 
 
+
+//ReadValues off of the ADC
+//int voltageBitADC = adc.readADC_SingleEnded(0);
+//int currentBitADC = adc.readADCSingleEnded(1);
 }
+
 void setup() {
   Serial.begin(9600);
   Serial.println("Initializing");
-  dac1.begin(0x62);
-  ads1115.begin();
+  dac.begin(0x62);
+  adc.begin();
   Serial.println("Initialized");
 }
 
-void loop() {
-   int bitValue = Serial.parseInt();
-   int sensorValue = analogRead(A1);
-     if (Serial.available() > 0) {
-            Serial.print("New Voltage Out:");
-            Serial.println(bitValue);
-            dac1.setVoltage(bitValue,false); 
-            delay(2000);
-          }
-    Serial.println(sensorValue);
+float resistance(float v1, float i1){
+  float resistance; 
+  resistance = v1/i1; 
+  return resistance; 
+}
 
+void loop() {
+   
 }
