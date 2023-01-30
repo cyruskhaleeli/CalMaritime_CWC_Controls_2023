@@ -13,24 +13,23 @@ const int n = 50; //Number of samples
 unsigned long nextprint; 
 
 
-int voltageBit1;
-int currentBit1;
-int voltageBit2;
-int currentBit2;
+float voltageA;
+float voltageB;
 
-float realVoltage1;
-float realCurrent1;
-float realVoltage2;
-float realCurrent2;
-
-float teensyResistance; 
-float i2cResistance; 
+float currentA;
+float currentB;
 
 float voltageScaling = 15.78; 
 float currentVOffset = 0.0917;
 float currentVscaling = 0.9362; 
 
 
+//Read Values off of the Teensy 
+int voltageBitTeensy = analogRead(A0);
+int currentBitTeensy = analogRead(A1);
+//Convert 10Bit to V & I 
+voltageA = ((voltageBitTeensy/1023.00)*3.30*voltageScaling); 
+currentA = ((((currentBitTeensy/1023.00)*3.30)-currentVOffset)/currentVscaling); 
 
 void readTeensy(){
   
@@ -66,7 +65,12 @@ void readADC(){
   Serial.print("I2C Measured Resistance:");
   Serial.println(i2cResistance);
 
+
+//ReadValues off of the ADC
+//int voltageBitADC = adc.readADC_SingleEnded(0);
+//int currentBitADC = adc.readADCSingleEnded(1);
 }
+
 void setup() {
   Serial.begin(9600);
   Serial.println("Initializing");
@@ -75,17 +79,12 @@ void setup() {
   Serial.println("Initialized");
 }
 
-void loop() {
-  //readADC();
-  readTeensy();
-   /*int bitValue = Serial.parseInt();
-   int sensorValue = analogRead(A1);
-     if (Serial.available() > 0) {
-            Serial.print("New Voltage Out:");
-            Serial.println(bitValue);
-            dac.setVoltage(bitValue,false); 
-            delay(2000);
-          }
-    Serial.println(sensorValue);*/
+float resistance(float v1, float i1){
+  float resistance; 
+  resistance = v1/i1; 
+  return resistance; 
+}
 
+void loop() {
+   
 }
