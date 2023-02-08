@@ -19,33 +19,33 @@ float voltageB;
 float currentA;
 float currentB;
 
+float resA;
+float resB; 
+
 float voltageScaling = 15.78; 
 float currentVOffset = 0.0917;
 float currentVscaling = 0.9362; 
 
 
-//Read Values off of the Teensy 
-int voltageBitTeensy = analogRead(A0);
-int currentBitTeensy = analogRead(A1);
-//Convert 10Bit to V & I 
-voltageA = ((voltageBitTeensy/1023.00)*3.30*voltageScaling); 
-currentA = ((((currentBitTeensy/1023.00)*3.30)-currentVOffset)/currentVscaling); 
+struct mainData{
+  float voltage,current,resistance;
+}
 
-void readTeensy(){
-  
-voltageBit1 = analogRead(vPin);
-realVoltage1 = (voltageBit1/1023)*3.3*voltageScaling; 
-Serial.print("Teesny Measured V:");
-Serial.println(realVoltage1);
 
-currentBit1 = analogRead(iPin);
-realCurrent1 = (((currentBit1/1023)*3.3)-currentVOffset); 
-Serial.print("Teensy Measured I:");
-Serial.println(realCurrent1);
 
-teensyResistance = realCurrent1/realVoltage1; 
-Serial.print("Teensy Measured Resistance:");
-Serial.println(teensyResistance);
+
+struct readTeensy(){
+  //ReadTeesnyAnalogPins
+  int voltageBitTeensy = analogRead(A0);
+  int currentBitTeensy = analogRead(A1);
+  //Convert 10Bit to V & I 
+  voltageA = ((voltageBitTeensy/1023.00)*3.30*voltageScaling); 
+  currentA = ((((currentBitTeensy/1023.00)*3.30)-currentVOffset)/currentVscaling);
+  resA  = voltageA/currentA; 
+
+  Serial.print("Teensy Res(ohms):");
+  Serial.println(resA);
+ 
 }
 
 void readADC(){
