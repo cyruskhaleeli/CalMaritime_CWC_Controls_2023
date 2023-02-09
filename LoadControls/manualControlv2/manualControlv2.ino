@@ -35,7 +35,7 @@ ioRead readLocalParams(){
   teensyIO = {vLocal,iLocal,resLocal};
   Serial.print(teensyIO.v);
   Serial.print(","); 
-  
+ 
   Serial.print(teensyIO.i);
   Serial.print(teensyIO.r); 
   return teensyIO; 
