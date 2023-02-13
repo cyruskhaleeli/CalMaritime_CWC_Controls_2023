@@ -87,7 +87,7 @@ typedef struct {
   float Kp,Kd,Ki,errMax,errMin,inverter;
 } ctrlValues; 
 
-  ctrlValues constPWR_Values = {0,0,0,10,-10};
+  ctrlValues constPWR_Values = {0,0,0,10,-10,0};
   ctrlValues constRES_Values = {0,0,0,10,-10};
   ctrlValues constVOL_Values = {0,0,0,2,-2};
   ctrlValues constCUR_Values = {0,0,0,0.2,-0.2};
