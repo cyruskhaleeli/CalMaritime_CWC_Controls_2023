@@ -88,9 +88,9 @@ typedef struct {
 } ctrlValues; 
 
   ctrlValues constPWR_Values = {0,0,0,10,-10,0};
-  ctrlValues constRES_Values = {0,0,0,10,-10};
-  ctrlValues constVOL_Values = {0,0,0,2,-2};
-  ctrlValues constCUR_Values = {0,0,0,0.2,-0.2};
+  ctrlValues constRES_Values = {0,0,0,10,-10,1};
+  ctrlValues constVOL_Values = {0,0,0,2,-2,0};
+  ctrlValues constCUR_Values = {0,0,0,0.2,-0.2,1};
 
 
 
@@ -119,7 +119,12 @@ void ctrlLaw(float sP,float mV,ctrlValues value,int state_val) {
   errSum += err; 
   float I = value.Ki*errSum; 
   //Control Output
-  dacOutput = (int)(P+I+D)*(4096/5); 
+  if(value.inverter){
+    dacOutput = 4096-(int)(P+I+D)*(4096/5);  
+  }
+  else{
+  dacOutput = (int)(P+I+D)*(4096/5);
+  } 
   dacOutput = constrain(dacOutput, 0, 4096); 
   dac1.setVoltage(dacOutput, false);
 }
@@ -194,18 +199,26 @@ void loop() {
   
   case 3 : //Constant Voltage
       measuredVar = teensyIO.v; 
-    ctrlLaw(setPoint,measuredVar,constRES_Values,state);
+    ctrlLaw(setPoint,measuredVar,constVOL_Values,state);
     if ((millis()-messageClock)>=50000){
     Serial.print("Constant Voltage Mode:");
     Serial.print(setPoint);
-    Serial.println(" Ohms");
-    Serial.print("Current Resistance:");
+    Serial.println(" Volts");
+    Serial.print("Current Voltage:");
     Serial.println(measuredVar); 
     }
     break;  
     
     case 4 : //Constant Current
-    
+    measuredVar = teensyIO.i; 
+    ctrlLaw(setPoint,measuredVar,constCUR_Values,state);
+    if ((millis()-messageClock)>=50000){
+      Serial.print("Constant Current Mode:");
+      Serial.print(setPoint);
+      Serial.println(" Amps");
+      Serial.print("Current Current:");
+      Serial.println(measuredVar); 
+    }
     break;
 
     case 5: //P&O Maybe 
