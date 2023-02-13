@@ -12,6 +12,7 @@
 #define adcCurrentPin 1
 #define teensyVoltagePin A0
 #define teensyCurrentPin A1 
+#define togglePin A11
 
 
 
@@ -22,6 +23,7 @@ Adafruit_MCP4725 dac1; // Construct an MCP4725
 //General Clock Globals 
 unsigned long clock = millis();
 unsigned long previousTime = 0; 
+unsigned long messageClock = 0; 
 //IO Globals
 float vLocal, vADC; //Voltage by Source 
 float iLocal, iADC;  //Current by Source
@@ -39,7 +41,7 @@ ioRead teensyIO;
 ioRead adcIO; 
 
 //IO Functions 
-ioRead readLocalParams(){
+void readLocalParams(){
   //ReadTeesnyAnalogPins
   int voltageBitTeensy = analogRead(teensyVoltagePin);
   int currentBitTeensy = analogRead(teensyCurrentPin);
@@ -53,10 +55,10 @@ ioRead readLocalParams(){
   Serial.print(teensyIO.i);
   Serial.print(","); 
   Serial.println(teensyIO.r); 
-  return teensyIO; 
+
 }
 
-ioRead readADCParams(){
+void readADCParams(){
   //ReadADCAnalogPins
   int voltageBitADC = adc1.readADC_SingleEnded(adcVoltagePin);
   int currentBitADC = adc1.readADC_SingleEnded(adcCurrentPin); 
@@ -66,7 +68,7 @@ ioRead readADCParams(){
   resADC  = vADC/iADC; 
   adcIO = {vADC,iADC,resADC};
   //Serial.println(adcIO);
-  return adcIO; 
+
 }
 //Control Laws
 
@@ -78,9 +80,11 @@ float errSum = 0l;
 int state = 0; 
 float modePrevious; 
 int dacOutput = 0; 
+float measuredVar; 
+
 
 typedef struct { 
-  float Kp,Kd,Ki,errMax,errMin;
+  float Kp,Kd,Ki,errMax,errMin,inverter;
 } ctrlValues; 
 
   ctrlValues constPWR_Values = {0,0,0,10,-10};
@@ -95,7 +99,7 @@ void ctrlLaw(float sP,float mV,ctrlValues value,int state_val) {
   {
    err = 0; 
    errPrev = 0; 
-   errSum = -0;
+   errSum = 0;
    modePrevious = state_val; 
   }
   
@@ -119,22 +123,6 @@ void ctrlLaw(float sP,float mV,ctrlValues value,int state_val) {
   dacOutput = constrain(dacOutput, 0, 4096); 
   dac1.setVoltage(dacOutput, false);
 }
-/*float constRes(){
-
-}
-float constV(){
-
-}
-float constI(){
-
-}
-
-*/
-
-
-
-
-
 
 
 void setup() {
@@ -142,18 +130,88 @@ void setup() {
   Serial.begin(9600); 
   adc1.begin();
   dac1.begin(0x62);
+  pinMode(togglePin,INPUT);
+
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+
+  if (Serial.available() > 0) {
+    setPoint =  Serial.parseFloat();
+    Serial.print("Setpoint:");
+    Serial.println(setPoint); //input #set_stroke in serial monitor
+  }
+
+  readADCParams(); 
+  readLocalParams(); 
+
+  int toggleState = digitalRead(togglePin);
+
+  if(toggleState == HIGH) {
+    if (state == 5){
+      state = 0;
+    } 
+    else {
+      state ++; 
+    }
+    
+  }
+
   switch (state)
   {
-  case 0 /* constant-expression */:
-    
+  case 0 : //Off State
+    if ((millis()-messageClock)>=50000){
+     Serial.println("Sys Off");
+     Serial.println("Select Mode and Enter Set Point");
+     messageClock=millis(); 
+     dac1.setVoltage(0, false);
+    }
+    break; 
+  
+  case 1 : //Constant Power
+    measuredVar = teensyIO.i * teensyIO.v; 
+    ctrlLaw(setPoint,measuredVar,constPWR_Values,state);
+    if ((millis()-messageClock)>=50000){
+    Serial.print("Constant Power Mode:");
+    Serial.print(setPoint);
+    Serial.println(" Watts");
+    Serial.print("Current Power:");
+    Serial.println(measuredVar); 
+    }
+    break;
+
+  case 2 : //Constant Resistance
+    measuredVar = teensyIO.v/teensyIO.i; 
+    ctrlLaw(setPoint,measuredVar,constRES_Values,state);
+    if ((millis()-messageClock)>=50000){
+    Serial.print("Constant Resistance Mode:");
+    Serial.print(setPoint);
+    Serial.println(" Ohms");
+    Serial.print("Current Resistance:");
+    Serial.println(measuredVar); 
+    }
     break;
   
-  default:
+  case 3 : //Constant Voltage
+      measuredVar = teensyIO.v; 
+    ctrlLaw(setPoint,measuredVar,constRES_Values,state);
+    if ((millis()-messageClock)>=50000){
+    Serial.print("Constant Voltage Mode:");
+    Serial.print(setPoint);
+    Serial.println(" Ohms");
+    Serial.print("Current Resistance:");
+    Serial.println(measuredVar); 
+    }
+    break;  
+    
+    case 4 : //Constant Current
+    
     break;
+
+    case 5: //P&O Maybe 
+
+    break; 
+
   }
 
 
