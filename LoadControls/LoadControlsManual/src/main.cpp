@@ -8,11 +8,12 @@
 
 // Pin Define 
 
-#define adcVoltagePin 0
-#define adcCurrentPin 1
-#define teensyVoltagePin A0
-#define teensyCurrentPin A1 
-#define togglePin A11
+#define adcVoltagePin 0 //ADC Analog Voltage Measurement Pin 
+#define adcCurrentPin 1 //ADC Analog Current Measurement Pin 
+#define teensyVoltagePin A0 //Analog Voltage Measurment Pin
+#define teensyCurrentPin A1 //Analog Current Measurment Pin
+#define togglePin 1 //State Change Pin
+
 
 
 
@@ -21,16 +22,16 @@ Adafruit_ADS1115 adc1;  // Construct an ads1115
 Adafruit_MCP4725 dac1; // Construct an MCP4725
 
 //General Clock Globals 
-unsigned long clock = millis();
-unsigned long previousTime = 0; 
-unsigned long messageClock = 0; 
+unsigned long clock = millis(); //Clock Reference 
+unsigned long previousTime = 0; //Control Law Clock
+unsigned long messageClock = 0; //Message Trigger Clock
 //IO Globals
 float vLocal, vADC; //Voltage by Source 
 float iLocal, iADC;  //Current by Source
 float resLocal, resADC; //Resistance by source 
-float voltageScaling = 15.78;  
-float currentVOffset = 0.0917;
-float currentVscaling = 0.9362; 
+float voltageScaling = 15.78;  //Scaling Factor for Voltage
+float currentVOffset = 0.0917; //Offset on Current Measurement
+float currentVscaling = 0.9362; //Scaling factor from voltage to current. 
 
 //Type Defining IORead as a Struct
 typedef struct{
@@ -95,6 +96,7 @@ typedef struct {
 
 
 void ctrlLaw(float sP,float mV,ctrlValues value,int state_val) {
+  if(sP!=0){
   if ( state_val != modePrevious)
   {
    err = 0; 
@@ -122,11 +124,13 @@ void ctrlLaw(float sP,float mV,ctrlValues value,int state_val) {
   if(value.inverter){
     dacOutput = 4096-(int)(P+I+D)*(4096/5);  
   }
-  else{
+  else {
   dacOutput = (int)(P+I+D)*(4096/5);
   } 
   dacOutput = constrain(dacOutput, 0, 4096); 
   dac1.setVoltage(dacOutput, false);
+  }
+  dac1.setVoltage(0,false);
 }
 
 
@@ -144,7 +148,7 @@ void loop() {
   if (Serial.available() > 0) {
     setPoint =  Serial.parseFloat();
     Serial.print("Setpoint:");
-    Serial.println(setPoint); //input #set_stroke in serial monitor
+    Serial.println(setPoint); //write setpoint to serial monitor
   }
 
   readADCParams(); 
