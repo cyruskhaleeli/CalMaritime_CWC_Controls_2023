@@ -14,9 +14,6 @@
 #define teensyCurrentPin A1 //Analog Current Measurment Pin
 #define togglePin 1 //State Change Pin
 
-
-
-
 //Create I2C Device Objects 
 Adafruit_ADS1115 adc1;  // Construct an ads1115 
 Adafruit_MCP4725 dac1; // Construct an MCP4725
@@ -35,8 +32,8 @@ float currentVscaling = 0.9362; //Scaling factor from voltage to current.
 
 //Type Defining IORead as a Struct
 typedef struct{
-  float v, i, r; 
-} ioRead; 
+  float v, i, r;  
+} ioRead; // Input Output Struct for holding measurement parameters
 
 ioRead teensyIO; 
 ioRead adcIO; 
@@ -56,7 +53,6 @@ void readLocalParams(){
   Serial.print(teensyIO.i);
   Serial.print(","); 
   Serial.println(teensyIO.r); 
-
 }
 
 void readADCParams(){
