@@ -22,6 +22,7 @@ Adafruit_MCP4725 dac1; // Construct an MCP4725
 unsigned long clock = millis(); //Clock Reference 
 unsigned long previousTime = 0; //Control Law Clock
 unsigned long messageClock = 0; //Message Trigger Clock
+
 //IO Globals
 float vLocal, vADC; //Voltage by Source 
 float iLocal, iADC;  //Current by Source
