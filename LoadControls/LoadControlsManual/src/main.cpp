@@ -5,7 +5,6 @@
   #include <Adafruit_ADS1X15.h>
   #include <SD.h>
   #include <SPI.h>
-  #include <parameterRead.h>
 
 
 // Pin Define 
@@ -19,7 +18,6 @@
 //Create I2C Device Objects 
 Adafruit_ADS1115 adc1;  // Construct an ads1115 
 Adafruit_MCP4725 dac1; // Construct an MCP4725
-
 //General Clock Globals 
 unsigned long clock = millis(); //Clock Reference 
 unsigned long previousTime = 0; //Control Law Clock
@@ -33,6 +31,7 @@ float voltageScaling = 15.78;  //Scaling Factor for Voltage
 float currentVOffset = 0.0917; //Offset on Current Measurement
 float currentVscaling = 0.9362; //Scaling factor from voltage to current. 
 
+
 //Type Defining IORead as a Struct
 typedef struct{
   float v, i, r;  
@@ -44,7 +43,7 @@ ioRead adcIO;
 //IO Functions 
 void readLocalParams(){
   //ReadTeesnyAnalogPins
-  int voltageBitTeensy = analogRead(teensyVoltagePin);
+  int voltageBitTeensy = adcanalogRead(teensyVoltagePin);
   int currentBitTeensy = analogRead(teensyCurrentPin);
   //Convert 10Bit to V & I 
   vLocal = (float)((voltageBitTeensy/1023.00)*3.30*voltageScaling); 
