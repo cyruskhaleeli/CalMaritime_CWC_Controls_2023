@@ -1,5 +1,5 @@
 
-#include <parameterRead.h>
+/*#include <parameterRead.h>
 #include <Arduino.h>
 #include <Adafruit_MCP4725.h>
 #include <Adafruit_ADS1X15.h>
@@ -14,8 +14,7 @@ parameterRead::parameterRead(int vLocalpin, int iLocalpin,int adcI2C,int adcPin)
 { 
   adc1.begin(adcI2C);
   const int _vLocal = vLocal; 
-  const int _vLocal = vLocal; 
-  const int _vLocal = vLocal; 
+   
   
 }
 
@@ -33,4 +32,4 @@ void parameterRead::dash()
   delay(1000);
   digitalWrite(_pin, LOW);
   delay(250);
-}
+}*/
