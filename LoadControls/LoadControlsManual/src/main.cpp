@@ -43,7 +43,7 @@ ioRead adcIO;
 //IO Functions 
 void readLocalParams(){
   //ReadTeesnyAnalogPins
-  int voltageBitTeensy = adcanalogRead(teensyVoltagePin);
+  int voltageBitTeensy = analogRead(teensyVoltagePin);
   int currentBitTeensy = analogRead(teensyCurrentPin);
   //Convert 10Bit to V & I 
   vLocal = (float)((voltageBitTeensy/1023.00)*3.30*voltageScaling); 
@@ -61,12 +61,15 @@ void readADCParams(){
   //ReadADCAnalogPins
   int voltageBitADC = adc1.readADC_SingleEnded(adcVoltagePin);
   int currentBitADC = adc1.readADC_SingleEnded(adcCurrentPin); 
-  //Convert 16Bit to V & I 
-  vADC = (float)((voltageBitADC/65536.00)*5.00*voltageScaling); 
-  iADC = (float)((((currentBitADC/65536.00)*5.00)-currentVOffset)/currentVscaling);
+  float _vADC = adc1.computeVolts(voltageBitADC);
+  float _iADC = adc1.computeVolts(currentBitADC);
+
+  //Convert to actual V & I;
+  vADC = (float)(_vADC*voltageScaling); 
+  iADC = (float)((_iADC-currentVOffset)/currentVscaling);
   resADC  = vADC/iADC; 
   adcIO = {vADC,iADC,resADC};
-  //Serial.println(adcIO);
+  
 
 }
 //Control Laws
